@@ -1,0 +1,102 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Shared Renovate policy for GreenJimmy sites. Extend with { \"extends\": [\"github>GreenJimmy/renovate-config\"] }.",
+
+  "extends": ["config:recommended", ":dependencyDashboard", ":semanticCommits"],
+
+  "baseBranchPatterns": ["dev"],
+
+  "rangeStrategy": "bump",
+  "timezone": "Europe/London",
+  "schedule": ["before 6am on monday"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
+
+  "platformAutomerge": false,
+  "automergeSchedule": ["at any time"],
+
+  "labels": ["dependencies"],
+  "commitMessagePrefix": "chore(deps):",
+
+  "minimumReleaseAge": "1 day",
+
+  "packageRules": [
+    {
+      "description": "Group all non-major production updates into one pull request.",
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "production",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group all non-major dev updates into one pull request.",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "development",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group GitHub Actions, including majors — these are small and easy to read.",
+      "matchManagers": ["github-actions"],
+      "groupName": "actions",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Majors are never automerged. The framework stack breaks on majors and each needs reading.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Keep the framework stack together so its pieces move as a set.",
+      "matchPackageNames": [
+        "next",
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ],
+      "groupName": "next+react"
+    },
+    {
+      "description": "Clerk ships auth changes across several packages at once.",
+      "matchPackageNames": ["/^@clerk//"],
+      "groupName": "clerk"
+    },
+    {
+      "description": "Prisma's client and CLI must move together or generate breaks.",
+      "matchPackageNames": ["prisma", "@prisma/client", "/^@prisma//"],
+      "groupName": "prisma"
+    },
+    {
+      "description": "eslint-config-next still pulls eslint-plugin-react 7.37.x, which peers on eslint <=9 and calls the context.getFilename() API that ESLint 10 removed. Raise when eslint-config-next ships an ESLint 10 compatible react plugin.",
+      "matchPackageNames": ["eslint", "@eslint/js"],
+      "allowedVersions": "<10.0.0"
+    },
+    {
+      "description": "pg 8.23.0 puts a non-string into the startup packet when driven by @prisma/adapter-pg, so every connection dies in pg-protocol addCString with ERR_INVALID_ARG_TYPE. Raise when the two agree again.",
+      "matchPackageNames": ["pg"],
+      "allowedVersions": "<8.23.0"
+    },
+    {
+      "description": "typescript-eslint peers on typescript <6.1.0, so TS 7 breaks pnpm lint. Raise this when typescript-eslint ships TS 7 support (typescript-eslint#10940).",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<6.1.0"
+    }
+  ],
+
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "schedule": ["at any time"],
+    "minimumReleaseAge": null,
+    "labels": ["security"]
+  },
+
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  }
+}
