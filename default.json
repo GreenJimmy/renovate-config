@@ -7,7 +7,7 @@
   "baseBranchPatterns": ["dev"],
 
   "rangeStrategy": "bump",
-  "timezone": "Europe/London",
+  "timezone": "America/Phoenix",
   "schedule": ["before 6am on monday"],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 0,
