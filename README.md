@@ -19,7 +19,7 @@ it is written down below.
 
 | Behaviour | Why |
 |---|---|
-| Pull requests target **`dev`** | Matches the dev-to-main flow the sites are released through. The two main-only repos override this — see below. |
+| Pull requests target **`dev`** | Matches the dev-to-main flow the sites are released through. |
 | Non-major grouped into `production` / `development` | One pull request a week for routine bumps instead of a dozen. |
 | Non-major **automerged** | CI is the gate. Majors always wait for a human. |
 | Renovate merges its own pull requests (`platformAutomerge: false`) | GitHub's auto-merge cannot be enabled on a pull request that is already mergeable, and these branches carry no required status checks — so platform auto-merge silently never completes. Renovate merging through the API works regardless. |
@@ -47,18 +47,33 @@ Check whether each still applies before assuming it earns its place.
 
 ## Per-repo overrides
 
-Two repos need more than the extends line.
+None today. Every repo has a `dev` branch and a CI workflow, so the extends line
+is the whole config everywhere.
 
-`nextjs-starter` and `coyote-coaching` have no `dev` branch, so they override the
-base branch or Renovate targets a branch that isn't there:
+Two overrides used to be needed and are worth knowing about in case either
+condition comes back:
 
-```json
-{ "extends": ["github>GreenJimmy/renovate-config"], "baseBranchPatterns": ["main"] }
-```
+- A repo with **no `dev` branch** must point Renovate at `main`, or it targets a
+  branch that isn't there:
 
-`coyote-coaching` and `easy-ballot` have **no CI workflow**, so the automerge in
-this preset would merge dependency updates with nothing verifying them. Both turn
-automerge off until they have a CI gate.
+  ```json
+  { "extends": ["github>GreenJimmy/renovate-config"], "baseBranchPatterns": ["main"] }
+  ```
+
+- A repo with **no CI workflow** must turn automerge off, or this preset merges
+  dependency updates with nothing verifying them:
+
+  ```json
+  { "packageRules": [{ "matchPackageNames": ["*"], "automerge": false }] }
+  ```
+
+  `coyote-coaching` and `easy-ballot` carried this until 2026-09; both now have a
+  CI workflow that runs on pull requests to `dev`, which is the gate automerge
+  relies on.
+
+Two settings that belong to the repo rather than to `renovate.json`: Issues must
+be enabled (the Dependency Dashboard is an issue, and majors can only be approved
+from it), and the Mend app must be installed on the repo.
 
 ## Don't add `transitiveRemediation`
 
