@@ -8,7 +8,7 @@
 
   "rangeStrategy": "bump",
   "timezone": "America/Phoenix",
-  "schedule": ["before 6am on monday"],
+  "schedule": ["* 2-6 * * 0"],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 0,
 
@@ -97,6 +97,8 @@
 
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["before 6am on the first day of the month"]
+    "schedule": ["* 2-6 1-7 * 0"],
+    "automerge": true,
+    "automergeType": "pr"
   }
 }

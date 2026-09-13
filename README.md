@@ -29,8 +29,9 @@ it is written down below.
 | `@clerk/*` grouped | Clerk ships auth changes across several packages at once. |
 | `prisma` + `@prisma/*` grouped | Client and CLI must match or `generate` breaks. |
 | `minimumReleaseAge: 1 day` | Catches bad publishes before they reach you, and matches the `minimumReleaseAge` pnpm enforces in `pnpm-workspace.yaml`. Renovate proposing something younger would produce a pull request pnpm then refuses to install. |
-| Security alerts bypass schedule and release-age | A fix you're waiting on shouldn't sit until Monday. |
-| Weekly, Monday before 6am | Updates are waiting when the week starts, not landing mid-flow. |
+| Security alerts bypass schedule and release-age | A fix you're waiting on shouldn't sit until Sunday. |
+| Weekly, Sunday 2am–7am (Phoenix) | The automated security review runs at 7am on Sundays and reports on whatever Renovate has opened, so Renovate's window has to close before it starts. It opens at 2am rather than 6am because the hosted app only visits a repo every few hours and Renovate recommends a window of at least 3–4 hours. |
+| Lock file maintenance on the first Sunday, automerged | Transitive-only fixes (a patched `js-yaml` under `eslint`, say) never get a PR of their own, so once a month the whole lockfile is re-resolved and merged on green CI. Same 2am–7am window, restricted to days 1–7, which cron reads as "the first Sunday" — so the review sees it the same morning. |
 | Dependency Dashboard | One issue listing everything pending, instead of triaging pull requests. |
 
 ## Three version ceilings
