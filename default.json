@@ -38,6 +38,11 @@
       "automergeType": "pr"
     },
     {
+      "description": "Engine ranges are floors, not pins. The global rangeStrategy bump rewrote node 24.x to 24.21.0, and with engine-strict that fails every install on a host running any other 24.x (Vercel, Railway's node:24-slim). Leave the range alone while the new version satisfies it; .nvmrc and packageManager still move.",
+      "matchDepTypes": ["engines"],
+      "rangeStrategy": "replace"
+    },
+    {
       "description": "Group GitHub Actions, including majors — these are small and easy to read.",
       "matchManagers": ["github-actions"],
       "groupName": "actions",
