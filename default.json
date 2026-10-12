@@ -8,7 +8,7 @@
 
   "rangeStrategy": "bump",
   "timezone": "America/Phoenix",
-  "schedule": ["* 2-6 * * 0"],
+  "schedule": ["* 20-23 * * 6", "* 0-6 * * 0"],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 0,
 
@@ -101,9 +101,9 @@
   },
 
   "lockFileMaintenance": {
-    "description": "Lock file maintenance is exempt from the release-age gate, like vulnerabilityAlerts above. A refreshed lock almost always resolves something published in the last 24 hours, so renovate/stability-days sat pending on every lock file PR and each rebase reset the clock; the automerge never fired and the weekly review merged them by hand. The lock only moves inside ranges the manifests already allow, so the gate protected nothing here.",
+    "description": "Lock file maintenance is exempt from the release-age gate, like vulnerabilityAlerts above. A refreshed lock almost always resolves something published in the last 24 hours, so renovate/stability-days sat pending on every lock file PR and each rebase reset the clock; the automerge never fired and the weekly review merged them by hand. The lock only moves inside ranges the manifests already allow, so the gate protected nothing here. The window is the same Saturday-evening-to-Sunday-morning one as the top-level schedule, both halves restricted to days 1-7 so it lands on or just before the first Sunday of the month.",
     "enabled": true,
-    "schedule": ["* 2-6 1-7 * 0"],
+    "schedule": ["* 20-23 1-7 * 6", "* 0-6 1-7 * 0"],
     "minimumReleaseAge": null,
     "automerge": true,
     "automergeType": "pr"
