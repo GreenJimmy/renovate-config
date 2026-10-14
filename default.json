@@ -56,6 +56,33 @@
       "dependencyDashboardApproval": true
     },
     {
+      "description": "pnpm overrides pin a security floor for a transitive dependency, not a version to track. Raising one to a new major forces an incompatible API on whichever package pinned the old line, breaking a dependency that was never ours to upgrade. In-range updates still flow, so the floor keeps rising as advisories are fixed. Matched on the file rather than a depType because every override lives in pnpm-workspace.yaml and nothing else there needs majors held.",
+      "matchFileNames": ["pnpm-workspace.yaml"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Override floors in pnpm-workspace.yaml are a one-line version bump covered by the full CI run, and they sat open for weeks in every repo waiting for a human (seven open PRs per repo on 2026-10-14). Automerge the non-major ones like the production and development groups; majors stay disabled by the rule above. Matching the file also lets the next+react group automerge, since its branch carries the next@<x override line and a group only automerges when every update in it may.",
+      "matchFileNames": ["pnpm-workspace.yaml"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "The packageManager pin (pnpm@x.y.z) is the version CI and the Dockerfile install; non-major bumps are mechanical and CI-covered.",
+      "matchDepTypes": ["packageManager"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Node minor and patch updates (.nvmrc and the Dockerfile base image) run the full CI matrix on the new runtime before merging; majors stay held.",
+      "matchPackageNames": ["node"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
       "description": "Keep the framework stack together so its pieces move as a set.",
       "matchPackageNames": [
         "next",

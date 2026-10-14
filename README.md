@@ -25,6 +25,8 @@ it is written down below.
 | Renovate merges its own pull requests (`platformAutomerge: false`) | GitHub's auto-merge cannot be enabled on a pull request that is already mergeable, and these branches carry no required status checks — so platform auto-merge silently never completes. Renovate merging through the API works regardless. |
 | No `transitiveRemediation` | It took the Athlonaut fleet offline for a week. See below. |
 | Majors need dashboard approval | The Next/Clerk/Prisma stack breaks on majors; each deserves reading. |
+| Majors blocked in `pnpm-workspace.yaml` | Overrides pin a security floor for a transitive dependency, not a version to track. A major forces an incompatible API on whichever package pinned the old line. In-range updates still flow. |
+| Non-major override floors, the `packageManager` pin and Node **automerged** | These are one-line, mechanical, and covered by the full CI run, and they sat open for weeks in every repo waiting for a human (seven open PRs per repo on 2026-10-14), eating the concurrent-PR limit that lock file maintenance needs. Matching `pnpm-workspace.yaml` also lets the `next+react` group automerge: its branch carries the `next@<x` override line, and a group only automerges when every update in it may. Majors stay held by the rules above. |
 | `next` + `react` + types grouped | They move as a set; splitting them produces unbuildable intermediate states. |
 | `@clerk/*` grouped | Clerk ships auth changes across several packages at once. |
 | `prisma` + `@prisma/*` grouped | Client and CLI must match or `generate` breaks. |
