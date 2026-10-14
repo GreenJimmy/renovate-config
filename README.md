@@ -19,18 +19,21 @@ it is written down below.
 
 | Behaviour | Why |
 |---|---|
-| Pull requests target **`dev`** | Matches the dev-to-main flow the sites are released through. The two main-only repos override this — see below. |
+| Pull requests target **`dev`** | Matches the dev-to-main flow the sites are released through. |
 | Non-major grouped into `production` / `development` | One pull request a week for routine bumps instead of a dozen. |
 | Non-major **automerged** | CI is the gate. Majors always wait for a human. |
 | Renovate merges its own pull requests (`platformAutomerge: false`) | GitHub's auto-merge cannot be enabled on a pull request that is already mergeable, and these branches carry no required status checks — so platform auto-merge silently never completes. Renovate merging through the API works regardless. |
 | No `transitiveRemediation` | It took the Athlonaut fleet offline for a week. See below. |
 | Majors need dashboard approval | The Next/Clerk/Prisma stack breaks on majors; each deserves reading. |
+| Majors blocked in `pnpm-workspace.yaml` | Overrides pin a security floor for a transitive dependency, not a version to track. A major forces an incompatible API on whichever package pinned the old line. In-range updates still flow. |
+| Non-major override floors, the `packageManager` pin and Node **automerged** | These are one-line, mechanical, and covered by the full CI run, and they sat open for weeks in every repo waiting for a human (seven open PRs per repo on 2026-10-14), eating the concurrent-PR limit that lock file maintenance needs. Matching `pnpm-workspace.yaml` also lets the `next+react` group automerge: its branch carries the `next@<x` override line, and a group only automerges when every update in it may. Majors stay held by the rules above. |
 | `next` + `react` + types grouped | They move as a set; splitting them produces unbuildable intermediate states. |
 | `@clerk/*` grouped | Clerk ships auth changes across several packages at once. |
 | `prisma` + `@prisma/*` grouped | Client and CLI must match or `generate` breaks. |
 | `minimumReleaseAge: 1 day` | Catches bad publishes before they reach you, and matches the `minimumReleaseAge` pnpm enforces in `pnpm-workspace.yaml`. Renovate proposing something younger would produce a pull request pnpm then refuses to install. |
-| Security alerts bypass schedule and release-age | A fix you're waiting on shouldn't sit until Monday. |
-| Weekly, Monday before 6am | Updates are waiting when the week starts, not landing mid-flow. |
+| Security alerts bypass schedule and release-age | A fix you're waiting on shouldn't sit until Sunday. |
+| Weekly, Saturday 8pm – Sunday 7am (Phoenix) | The automated security review runs at 7am on Sundays and reports on whatever Renovate has opened, so Renovate's window has to close before it starts. It opens on Saturday evening because the hosted app visits each repo on its own cadence of roughly every four to six hours, not on this schedule: with a five-hour window (2am–7am) a repo whose visit landed just before it opened was not visited again until after it closed, and one or two repos missed the window most weeks (aquaco three of four Sundays in September and October 2026). Eleven hours spans at least two visits. |
+| Lock file maintenance on the first Sunday, automerged | Transitive-only fixes (a patched `js-yaml` under `eslint`, say) never get a PR of their own, so once a month the whole lockfile is re-resolved and merged on green CI. Same Saturday-evening-to-Sunday-morning window, both halves restricted to days 1–7, which cron reads as "the first Sunday" (and the Saturday before it when that Saturday is also in the first week) — so the review sees it the same morning. Exempt from the one-day release age: a refreshed lock nearly always contains something published in the last 24 hours, so with the gate on, `renovate/stability-days` stayed pending on every lock file PR, each rebase reset the clock, and the automerge never fired. |
 | Dependency Dashboard | One issue listing everything pending, instead of triaging pull requests. |
 
 ## Three version ceilings
@@ -47,18 +50,33 @@ Check whether each still applies before assuming it earns its place.
 
 ## Per-repo overrides
 
-Two repos need more than the extends line.
+None today. Every repo has a `dev` branch and a CI workflow, so the extends line
+is the whole config everywhere.
 
-`nextjs-starter` and `coyote-coaching` have no `dev` branch, so they override the
-base branch or Renovate targets a branch that isn't there:
+Two overrides used to be needed and are worth knowing about in case either
+condition comes back:
 
-```json
-{ "extends": ["github>GreenJimmy/renovate-config"], "baseBranchPatterns": ["main"] }
-```
+- A repo with **no `dev` branch** must point Renovate at `main`, or it targets a
+  branch that isn't there:
 
-`coyote-coaching` and `easy-ballot` have **no CI workflow**, so the automerge in
-this preset would merge dependency updates with nothing verifying them. Both turn
-automerge off until they have a CI gate.
+  ```json
+  { "extends": ["github>GreenJimmy/renovate-config"], "baseBranchPatterns": ["main"] }
+  ```
+
+- A repo with **no CI workflow** must turn automerge off, or this preset merges
+  dependency updates with nothing verifying them:
+
+  ```json
+  { "packageRules": [{ "matchPackageNames": ["*"], "automerge": false }] }
+  ```
+
+  `coyote-coaching` and `easy-ballot` carried this until 2026-09; both now have a
+  CI workflow that runs on pull requests to `dev`, which is the gate automerge
+  relies on.
+
+Two settings that belong to the repo rather than to `renovate.json`: Issues must
+be enabled (the Dependency Dashboard is an issue, and majors can only be approved
+from it), and the Mend app must be installed on the repo.
 
 ## Don't add `transitiveRemediation`
 
