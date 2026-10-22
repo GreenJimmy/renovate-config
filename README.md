@@ -20,7 +20,9 @@ it is written down below.
 | Behaviour | Why |
 |---|---|
 | Pull requests target **`dev`** | Matches the dev-to-main flow the sites are released through. |
-| Non-major grouped into `production` / `development` | One pull request a week for routine bumps instead of a dozen. |
+| All routine non-major updates grouped into **one** `non-major` pull request | Production, dev, GitHub Actions, override floors, Node and pnpm bumps share one weekly pull request. Renovate drove about half of PR CI minutes in October 2026, and each separate group cost its own CI run; one group is one run. `next`+`react`, Clerk and Prisma keep their own groups (below). Majors stay separate, one pull request each, behind dashboard approval. |
+| Rebase only on conflict (`rebaseWhen: "conflicted"`) | The default rebases every open pull request each time `dev` moves, and every rebase re-runs CI. Same as the Athlonaut preset. |
+| No `updateNotScheduled: false` | It would stop Renovate touching open pull requests outside the weekend window, but `renovate/stability-days` is only refreshed when Renovate processes the branch, so a group opened with a release under a day old would stay pending and automerge would stall until the next weekend. |
 | Non-major **automerged** | CI is the gate. Majors always wait for a human. |
 | Renovate merges its own pull requests (`platformAutomerge: false`) | GitHub's auto-merge cannot be enabled on a pull request that is already mergeable, and these branches carry no required status checks — so platform auto-merge silently never completes. Renovate merging through the API works regardless. |
 | No `transitiveRemediation` | It took the Athlonaut fleet offline for a week. See below. |
