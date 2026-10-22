@@ -12,6 +12,8 @@
   "prConcurrentLimit": 5,
   "prHourlyLimit": 0,
 
+  "rebaseWhen": "conflicted",
+
   "platformAutomerge": false,
   "automergeSchedule": ["at any time"],
 
@@ -22,18 +24,9 @@
 
   "packageRules": [
     {
-      "description": "Group all non-major production updates into one pull request.",
-      "matchDepTypes": ["dependencies"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "production",
-      "automerge": true,
-      "automergeType": "pr"
-    },
-    {
-      "description": "Group all non-major dev updates into one pull request.",
-      "matchDepTypes": ["devDependencies"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "development",
+      "description": "Group every routine non-major update (dependencies, devDependencies, GitHub Actions, override floors, Node, pnpm) into one weekly pull request. Each group is its own CI run plus re-runs, and Renovate drove about half of PR CI minutes in October 2026. next+react, Clerk and Prisma rules come later and keep their own groups.",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest", "pinDigest"],
+      "groupName": "non-major",
       "automerge": true,
       "automergeType": "pr"
     },
@@ -41,13 +34,6 @@
       "description": "Engine ranges are floors, not pins. The global rangeStrategy bump rewrote node 24.x to 24.21.0, and with engine-strict that fails every install on a host running any other 24.x (Vercel, Railway's node:24-slim). Leave the range alone while the new version satisfies it; .nvmrc and packageManager still move.",
       "matchDepTypes": ["engines"],
       "rangeStrategy": "replace"
-    },
-    {
-      "description": "Group GitHub Actions, including majors — these are small and easy to read.",
-      "matchManagers": ["github-actions"],
-      "groupName": "actions",
-      "automerge": true,
-      "automergeType": "pr"
     },
     {
       "description": "Majors are never automerged. The framework stack breaks on majors and each needs reading.",
@@ -62,7 +48,7 @@
       "enabled": false
     },
     {
-      "description": "Override floors in pnpm-workspace.yaml are a one-line version bump covered by the full CI run, and they sat open for weeks in every repo waiting for a human (seven open PRs per repo on 2026-10-14). Automerge the non-major ones like the production and development groups; majors stay disabled by the rule above. Matching the file also lets the next+react group automerge, since its branch carries the next@<x override line and a group only automerges when every update in it may.",
+      "description": "Override floors in pnpm-workspace.yaml are a one-line version bump covered by the full CI run, and they sat open for weeks in every repo waiting for a human (seven open PRs per repo on 2026-10-14). Automerge the non-major ones like the rest of the non-major group; majors stay disabled by the rule above. Matching the file also lets the next+react group automerge, since its branch carries the next@<x override line and a group only automerges when every update in it may.",
       "matchFileNames": ["pnpm-workspace.yaml"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true,
